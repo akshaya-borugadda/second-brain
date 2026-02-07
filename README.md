@@ -1,23 +1,3 @@
-Got it 👍 — no stress.
-Below is **ONE clean, complete README.md**.
-You can **copy–paste this whole thing directly** into `README.md`.
-No conflicts, no breaks.
-
----
-
-## ✅ WHAT TO DO FIRST (VERY IMPORTANT)
-
-1. Open **README.md**
-2. **Delete everything inside it**
-3. Paste **ALL the content below**
-4. Save the file
-5. Then run the Git commands I give at the end
-
----
-
-## 📄 COPY-PASTE THIS ENTIRE README (FROM START TO END)
-
-```md
 # 🧠 Second Brain – Personal Knowledge Management App
 
 Second Brain is a full-stack web application that helps users capture, organize, search, and summarize their knowledge in one place.  
