@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { motion, useScroll, useTransform } from "framer-motion";
 
 type KnowledgeItem = {
   id: string;
@@ -19,9 +20,12 @@ export default function Home() {
   const [type, setType] = useState("note");
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
+
+  // Parallax effect
+  const { scrollY } = useScroll();
+  const yHeader = useTransform(scrollY, [0, 300], [0, -50]);
 
   // FETCH
   const fetchItems = async () => {
@@ -78,15 +82,17 @@ export default function Home() {
   });
 
   return (
-    <main className="min-h-screen bg-gray-50 py-10 px-4">
+    <main className="min-h-screen bg-gray-50 py-10 px-4 scroll-smooth">
       <div className="max-w-3xl mx-auto">
-        {/* HEADER */}
-        <h1 className="text-4xl font-extrabold text-gray-900 mb-1">
-          Second Brain
-        </h1>
-        <p className="text-gray-600 mb-8">
-          Capture your thoughts, ideas, and insights — organized & summarized
-        </p>
+        {/* HEADER WITH PARALLAX */}
+        <motion.div style={{ y: yHeader }} className="mb-8">
+          <h1 className="text-4xl font-extrabold text-gray-900 mb-1">
+            Second Brain
+          </h1>
+          <p className="text-gray-600">
+            Capture your thoughts, ideas, and insights — organized & summarized
+          </p>
+        </motion.div>
 
         {/* FORM */}
         <form
@@ -151,56 +157,71 @@ export default function Home() {
 
         {/* LIST */}
         <section className="space-y-4">
-          {filteredItems.length === 0 && (
+          {loading && (
+            <div className="space-y-4">
+              {[1, 2, 3].map((n) => (
+                <div key={n} className="bg-white border rounded-xl shadow-sm p-5 animate-pulse">
+                  <div className="h-6 bg-gray-300 rounded w-3/4 mb-2"></div>
+                  <div className="h-4 bg-gray-300 rounded w-1/2 mb-4"></div>
+                  <div className="h-4 bg-gray-300 rounded w-full mb-2"></div>
+                  <div className="h-4 bg-gray-300 rounded w-full"></div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!loading && filteredItems.length === 0 && (
             <p className="text-center text-gray-500 py-10">
               No notes yet. Start writing ✍️
             </p>
           )}
 
-          {filteredItems.map((item) => (
-            <div
-              key={item.id}
-              className="bg-white border rounded-xl shadow-sm p-5 hover:shadow-md transition"
-            >
-              <h2 className="text-lg font-semibold text-gray-900">
-                {item.title}
-              </h2>
-
-              <p className="text-xs text-gray-500 mb-2">
-                {item.type} • {new Date(item.created_at).toLocaleString()}
-              </p>
-
-              <p className="text-gray-700">{item.content}</p>
-
-              {item.summary && (
-                <div className="mt-3 bg-blue-50 text-blue-700 p-3 rounded-lg text-sm">
-                   <span className="font-medium">AI Summary:</span>{" "}
-                  {item.summary}
+          {!loading &&
+            filteredItems.map((item) => (
+              <motion.div
+                key={item.id}
+                whileHover={{ y: -4, boxShadow: "0 10px 20px rgba(0,0,0,0.12)" }}
+                whileTap={{ scale: 0.97 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="bg-white border rounded-xl shadow-sm p-5 transition"
+              >
+                <h2 className="text-lg font-semibold text-gray-900">{item.title}</h2>
+                <p className="text-xs text-gray-500 mb-2">
+                  {item.type} • {new Date(item.created_at).toLocaleString()}
+                </p>
+                <p className="text-gray-700">{item.content}</p>
+                {item.summary && (
+                  <div className="mt-3 bg-blue-50 text-blue-700 p-3 rounded-lg text-sm">
+                    <span className="font-medium">AI Summary:</span> {item.summary}
+                  </div>
+                )}
+                <div className="mt-4 flex gap-4">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="text-blue-600 hover:underline"
+                    onClick={() => {
+                      setEditingId(item.id);
+                      setTitle(item.title);
+                      setContent(item.content);
+                      setType(item.type);
+                    }}
+                  >
+                    Edit
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="text-red-600 hover:underline"
+                    onClick={() => handleDelete(item.id)}
+                  >
+                    Delete
+                  </motion.button>
                 </div>
-              )}
-
-              <div className="mt-4 flex gap-4">
-                <button
-                  className="text-blue-600 hover:underline"
-                  onClick={() => {
-                    setEditingId(item.id);
-                    setTitle(item.title);
-                    setContent(item.content);
-                    setType(item.type);
-                  }}
-                >
-                  Edit
-                </button>
-
-                <button
-                  className="text-red-600 hover:underline"
-                  onClick={() => handleDelete(item.id)}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
+              </motion.div>
+            ))}
         </section>
       </div>
     </main>
